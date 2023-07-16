@@ -8,7 +8,7 @@
 #include <vector>
 
 #define PI 3.14159265358979323846f
-#define NUM_POINTS 100000
+#define NUM_POINTS 150000
 
 using namespace spatial_index;
 

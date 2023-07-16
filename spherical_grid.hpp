@@ -121,27 +121,9 @@ template <std::size_t CellCapacity = 10000U> class SphericalGrid
         return spherical_grid_[cell_index];
     }
 
-    struct Haversine
-    {
-        inline float operator()(float value) const noexcept
-        {
-            return std::pow(std::sin(value / 2.0f), 2.0f);
-        }
-    };
-
     inline static float getDistance(const SphericalPoint &p1, const SphericalPoint &p2)
     {
-        // See https://math.stackexchange.com/questions/833002/distance-between-two-points-in-spherical-coordinates
-
-        // static constexpr Haversine haversine{};
-
-        // float d_azimuth_rad = p2.azimuth_rad - p1.azimuth_rad;
-        // float d_elevation_rad = p2.elevation_rad - p1.elevation_rad;
-
-        // float a = haversine(d_elevation_rad) + std::cos(p1.elevation_rad) * std::cos(p2.elevation_rad);
-        // float c = 2.0f * std::atan2(std::sqrt(a), std::sqrt(1.0f - a));
-
-        // return 0.5f * (p1.radius_m + p2.radius_m) * c;
+        // d^2 = r1^2 + r2^2 - 2*r1*r2*(sin(ϕ1)*sin(ϕ2)*cos(θ1-θ2) + cos(ϕ1)*cos(ϕ2))
 
         float cos_angle =
             std::sin(p1.elevation_rad) * std::sin(p2.elevation_rad) * std::cos(p1.azimuth_rad - p2.azimuth_rad) +

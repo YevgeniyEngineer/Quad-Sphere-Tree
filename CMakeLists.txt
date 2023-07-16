@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.18)
 
-project(quad_sphere_tree)
+project(spherical_grid)
 
-add_library(${PROJECT_NAME} INTERFACE quad_sphere_tree.hpp)
+add_library(${PROJECT_NAME} INTERFACE spherical_grid.hpp)
 
 add_executable(main main.cpp)
 
