@@ -211,7 +211,7 @@ template <std::size_t CellCapacity = 10000U> class SphericalGrid
             const SphericalCell<CELL_CAPACITY> &cell = spherical_grid_[current_cell_index];
             for (std::size_t i = 0; i < cell.count; ++i)
             {
-                float d = distance(point, cell.points[i]);
+                float d = getDistance(point, cell.points[i]);
                 nearest_neighbours.push_back({cell.points[i], d});
             }
 
