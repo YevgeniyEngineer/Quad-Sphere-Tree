@@ -12,12 +12,27 @@
 
 using namespace spatial_index;
 
+SphericalPoint normalizedPoint(const SphericalPoint &point)
+{
+    SphericalPoint normalized_point = point;
+
+    // normalize azimuth_rad to [0, 2*pi]
+    normalized_point.azimuth_rad = fmod(normalized_point.azimuth_rad, 2 * PI);
+    if (normalized_point.azimuth_rad < 0)
+        normalized_point.azimuth_rad += 2 * PI;
+
+    // normalize elevation_rad to [-pi/2, pi/2]
+    normalized_point.elevation_rad = fmod(normalized_point.elevation_rad + PI / 2, PI) - PI / 2;
+
+    return normalized_point;
+}
+
 SphericalPoint randomPoint()
 {
     return SphericalPoint{
-        static_cast<float>(std::rand()) / RAND_MAX,              // radius_m in [0, 1]
-        static_cast<float>(std::rand()) / RAND_MAX * 2 * PI,     // azimuth_rad in [0, 2*pi].
-        static_cast<float>(std::rand()) / RAND_MAX * PI - PI / 2 // elevation_rad in [-pi/2, pi/2].
+        static_cast<float>(std::rand()) / RAND_MAX * 500.0f, // radius_m in [0, 500]
+        static_cast<float>(std::rand()) / RAND_MAX * 2 * PI, // azimuth_rad in [0, 2*pi]
+        static_cast<float>(std::rand()) / RAND_MAX * PI      // elevation_rad in [0, pi]
     };
 }
 
@@ -35,7 +50,7 @@ int main()
     std::srand(std::time(nullptr));
 
     // Create a grid.
-    SphericalGrid grid(0.1f, 0.2f, 0.2f);
+    SphericalGrid grid(40.0f, 0.2f, 0.2f);
 
     // Create a vector to hold the points for brute force search.
     std::vector<SphericalPoint> points;
@@ -69,7 +84,7 @@ int main()
     float min_distance = std::numeric_limits<float>::max();
     for (const SphericalPoint &point : points)
     {
-        float distance = grid.getDistance(point, target);
+        float distance = grid.getDistanceSquared(point, target);
         if (distance < min_distance)
         {
             min_distance = distance;
@@ -77,11 +92,6 @@ int main()
         }
     }
     auto t3 = std::chrono::high_resolution_clock::now();
-
-    if (!success)
-    {
-        std::cout << "Could not find nearest neighbour using grid\n";
-    }
 
     // Check that the results are the same.
     if (nearest_point.point == nearest_brute)
@@ -91,13 +101,14 @@ int main()
     else
     {
         std::cout << "Test failed!" << std::endl;
-        std::cout << "Grid NN: radius_m = " << nearest_point.point.radius_m
-                  << ", azimuth_rad = " << nearest_point.point.azimuth_rad
-                  << ", elevation_rad = " << nearest_point.point.elevation_rad << std::endl;
-        std::cout << "Brute-force NN: radius_m = " << nearest_brute.radius_m
-                  << ", azimuth_rad = " << nearest_brute.azimuth_rad
-                  << ", elevation_rad = " << nearest_brute.elevation_rad << std::endl;
     }
+
+    std::cout << "Grid NN: radius_m = " << nearest_point.point.radius_m
+              << ", azimuth_rad = " << nearest_point.point.azimuth_rad
+              << ", elevation_rad = " << nearest_point.point.elevation_rad << std::endl;
+    std::cout << "Brute-force NN: radius_m = " << nearest_brute.radius_m
+              << ", azimuth_rad = " << nearest_brute.azimuth_rad << ", elevation_rad = " << nearest_brute.elevation_rad
+              << std::endl;
 
     std::cout << "Elapsed time (grid search, seconds): " << static_cast<double>((t2 - t1).count()) * 1e-9 << std::endl;
     std::cout << "Elapsed time (brute force search, seconds): " << static_cast<double>((t3 - t2).count()) * 1e-9
